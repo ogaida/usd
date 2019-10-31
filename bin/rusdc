@@ -1,0 +1,265 @@
+#!/usr/bin/env ruby
+
+require "thor"
+require 'tempfile'
+require "erb"
+
+load "#{__dir__}/usd.rb"
+
+class Rusdc < Thor
+
+  desc "chg_add_nr", "<CO> <CI> - fügt einer CO ein CI hinzu"
+  def chg_add_nr(co, ci)
+    template = ERB.new <<-EOF
+      {
+        "lrel_asset_chgnr": {
+          "chg": {
+            "@id": "<%= uid_co %>"
+          },
+          "nr": {
+            "@id": "<%= uid_nr %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash(:uid_co => loadcon.request("/caisd-rest/chg/COMMON_NAME-#{co}")["chg"]["@id"], :uid_nr => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{ci}")["nr"]["@id"])
+    puts loadcon.create({:type => "json", :data => json})
+  end
+
+  desc "chg_list_nr", "<CO> - listet alle CIs einer CO"
+  def chg_list_nr(co)
+    invoke 'find', ['lrel_asset_chgnr', %(chg.chg_ref_num = '#{co}'), "nr"], {:format => "mlr", :mlr_format => "xtab"}
+  end
+
+  desc "create", "pipe json-data to create object"
+  def create()
+    puts loadcon.create({:type => "json", :data => STDIN.read})
+  end
+
+  desc "field_names","field_names <object> , listet die Attribute und Beziehungen eines Objektes auf."
+  def field_names(object)
+    e = loadcon.search(object,{'fields' => "*","start" => "1", "size" => "1"})[0]
+    e.keys.sort.each do |k|
+      puts "#{k} (#{e[k].class})"
+      if e[k].class  == Hash
+        puts e[k].jp
+      end
+    end
+  end
+
+  desc "find", "find <object> <where-clause> [fields - Komma getrennt (id,name)] - findet alle Objecte die die wc erfüllen."
+  long_desc <<-LONGDESC
+
+
+    Mit --mlr_format kann man das output-Format von Miller (mlr) ändern auf csv, md (markdown), xtab (sehr übersichtlich), dkvp (Delimited key-value pairs) ..., siehe `mlr --help`
+
+    Beispiele:
+
+    - alle aktiven CIs die mit sygosrv beginnen und die Zahl 58 enthalten:
+    ./rusdc find nr "name like 'servername' and delete_flag.sym = 'Active' " "id,name" --format mlr
+
+    - meine aktiven Incidents:
+    ./rusdc find --format mlr in "assignee.last_name = 'gaida' and status.sym in ('Service pending','Work in progress.','Customer Pending','Open','Hold','Resolved')" ref_num,z_project,summary,status,call_back_date,affected_resource,orig_user_organization
+
+    - Activity-Log eines Incidents:
+    ./rusdc find alg "call_req_id.ref_num = 'I00001'" "call_req_id,action_desc,analyst,description,time_stamp,type" --format mlr --mlr_format xtab
+
+    - nur die Beschreibungen Activity-Log eines Incidents:
+    ./rusdc find alg "call_req_id.ref_num = 'I00001'" "description" --format mlr --mlr_format csv
+
+    - Incidents einer Maschine
+    ./rusdc find in "affected_resource.name = 'servername'" "ref_num,summary" --format mlr
+
+    - Kombiniert, alle Activity-Log-Beschreibungen aller Incidents einer Maschine:
+    ./rusdc find alg "call_req_id.affected_resource.name = 'servername'" "description" --format mlr
+
+    - Changes einer Maschine:
+    rusdc find chg "asset.nr.name = 'servername'" "@COMMON_NAME,summary,status" --format mlr
+
+    - Alle Maschinen finden die mit goes beginnen und deren childs auf Linux und Windows prüfen:
+    for ci in $(rusdc find nr "name like 'dc%' and delete_flag.sym = 'active'" "name" --format mlr | sed '1 d'); do rusdc nr_childs $ci > help ; echo "$ci: $(grep -iP '^(Linux|.*MS windows).*server' help)" ; done
+
+  LONGDESC
+  option :format, :type => :string, :default => "json"
+  option :mlr_format, :type => :string, :default => "pprint"
+  option :nice_time, :type => :boolean, :default => true
+  option :debug, :type => :boolean, :default => false
+  def find(object, wc, fields="*")
+    con = loadcon
+    con.debug = options[:debug]
+    e = con.search(object,{'fields' => fields,"wc" => wc})
+    if e.length > 0
+      if options[:nice_time]
+        e.each_index do |i|
+          e[i].keys.each do |key|
+            if key =~ /(date|last_mod|warranty_start|warranty_end|time_stamp)$/
+              e[i][key]=Time.at(e[i][key]).to_s
+            end
+          end
+        end
+      end
+      case options[:format]
+      when "json"
+        puts e.jp
+      when "yaml"
+        puts e.to_yaml
+      when "mlr"
+        # hierfuer muessen jq und mlr verfuegbar sein
+        if (fields =~ /^[\w\_,@]+$/)
+          fields_array=fields.split(/,/)
+          jq_mapping = []
+          fields_array.each do |key|
+            if e[0].keys.include?(key)
+              if e[0][key].class == Hash
+                jq_mapping << %("#{key}": ."#{key}"."@COMMON_NAME")
+              else
+                jq_mapping << %("#{key}": ."#{key}")
+              end
+            end
+          end
+          jq_mapping_string = jq_mapping.join(",")
+          file = Tempfile.new('inner_cmd')
+          cmd = %(jq '[.[]|{#{jq_mapping_string}}]' #{file.path} | mlr --ijson --o#{options[:mlr_format]} cat)
+          file.write(e.jp)
+          file.close
+          `cp #{file.path} /tmp/test.json`
+          puts `#{cmd}`
+          file.unlink
+        else
+          puts "fields Problem: es sind nur Buchstaben, Ziffern, Komma und Unterstrich zulaessig."
+        end
+      else
+        puts "das Format #{options[:format]} ist nicht hinterlegt. Es gibt nur json, yaml oder mlr."
+      end
+    else
+      puts "keine Einträge gefunden!"
+    end
+  end
+
+  desc "get", "get <object> <cn>"
+  option :yaml, :type => :boolean, :default => false
+  def get(object, cn)
+    e = loadcon.request("/caisd-rest/#{object}/COMMON_NAME-#{cn}")
+    if e.class == Hash
+      puts options[:yaml] ?  e[object].to_yaml : e[object].jp
+    elsif e.message == "409 Conflict"
+      puts %(#{e.message} - try with 'rusdc find #{object} "" "@COMMON_NAME" --format mlr | sort | uniq -c | sort -n -r | head -20', may be more then one object with this COMMON_NAME)
+    else
+      puts e.response
+    end
+  end
+
+  desc "get_attachment_of_ci", "<ci_name> <filename>"
+  def get_attachment_of_ci(ciname, filename)
+    att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
+    att_nr.each do |att|
+      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      if attmnt["orig_file_name"] == filename
+        puts loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true})
+      end
+    end
+  end
+
+  desc "get_attachment_of_co", "<co_name> <filename>"
+  def get_attachment_of_co(coname, filename)
+    chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
+    att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
+    att_nr.each do |att|
+      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      if attmnt["orig_file_name"] == filename
+        puts loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true})
+      end
+    end
+  end
+
+  desc "list_attachments_of_ci", "<ci_name>"
+  def list_attachments_of_ci(ciname)
+    att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
+    att_nr.each do |att|
+      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]["orig_file_name"]
+    end
+  end
+
+  desc "list_attachments_of_co", "<co_name>"
+  def list_attachments_of_co(coname)
+    chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
+    att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
+    att_nr.each do |att|
+      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]["orig_file_name"]
+    end
+  end
+
+  desc "nr_add_child", "<nr-name> <child-name>"
+  def nr_add_child(nr, child)
+    template = ERB.new <<-EOF
+      {
+        "hier": {
+          "child": {
+             "@id": "<%= uid_child %>"
+          },
+          "parent": {
+            "@id": "<%= uid_parent %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash(:uid_child => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{child}")["nr"]["@id"], :uid_parent => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{nr}")["nr"]["@id"])
+    puts loadcon.create({:type => "json", :data => json})
+  end
+
+  desc "nr_changes", "<nr> [inactive-too] - listet alle offenen Change eines nr, bei Bedarf auch inaktive"
+  option :inactive_too, :type => :boolean, :default => false
+  def nr_changes(nr)
+    wc_add = (options[:inactive_too] ? "" : " and status.sym in ('Service pending','Work in progress','Customer Pending','Open','Hold')")
+    wc =  %(asset.nr.name = '#{nr}'#{wc_add})
+    invoke 'find', ['chg', wc, 'chg_ref_num,summary,status'], {:format => "mlr"}
+  end
+
+  desc "nr_childs", "nr_childs <ci-name> , listet alle Childs eines CI"
+  def nr_childs(name)
+    loadcon.search("hier",{'fields' => "*","wc" => "parent.name = '#{name}'"}).each do |c|
+      puts c["child"]["@COMMON_NAME"]
+    end
+  end
+
+  desc "nr_incidents", "<nr> [inactive-too] - listet alle offenen Incidents eines nr, bei Bedarf auch inaktive"
+  option :inactive_too, :type => :boolean, :default => false
+  def nr_incidents(nr)
+    invoke 'find', ['in', %(affected_resource.name = '#{nr}'#{options[:inactive_too] ? "" : " and not status.sym in ('Cancelled','Closed')"}), "ref_num,summary,status"], {:format => "mlr"}
+  end
+
+  desc "nr_parents", "nr_parents <ci-name> , listet alle Parents eines CI"
+  def nr_parents(name)
+    loadcon.search("hier",{'fields' => "*","wc" => "child.name = '#{name}'"}).each do |c|
+      puts c["parent"]["@COMMON_NAME"]
+    end
+  end
+
+  desc "update", "pipe json-data to update object"
+  long_desc <<-LONGDESC
+
+  Hier ein Beispiel
+
+  ciname=servername
+  rusdc find nr "name like '$ciname'" "z_backup" |jq '{nr:(.[0]|.z_backup= (.z_backup +"\n----\neine neue Zeile")|del(.link,."@id",."@REL_ATTR"))}' | rusdc update
+
+  LONGDESC
+  def update()
+    puts loadcon.update({:type => "json", :data => STDIN.read})
+  end
+
+
+  private
+
+  def loadcon
+    if ENV["usduser"] and ENV["usdpass"] and ENV["usdurl"]
+      Usd.new(ENV["usduser"],ENV["usdpass"],ENV["usdurl"])
+    else
+      puts "ACHTUNG:\n\nMindestens einer der Umgebunsvariablen usduser, usdpass und usdurl ist nicht gesetzt. Am besten das Skript #{__dir__}/set_env_prod mit `source` aufrufen!"
+      puts "  also :  source  #{__dir__}/set_env_prod \n"
+    end
+  end
+
+end
+
+Rusdc.start(ARGV)

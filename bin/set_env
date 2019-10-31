@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# load with `source ./set_env`
+
+export usduser=username
+export usdurl="http://localhost:8050"
+if [ -z "$usdpass" ]
+then
+  read -s -p "password for $usduser ? " usdpass
+  echo ""
+  export usdpass
+fi
