@@ -3,8 +3,7 @@
 require "thor"
 require 'tempfile'
 require "erb"
-
-load "#{__dir__}/usd.rb"
+require "usd"
 
 class Rusdc < Thor
 

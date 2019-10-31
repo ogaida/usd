@@ -2,3 +2,52 @@
 # usd - Ruby Class for SDM REST-API-Calls
 
 There is a ruby class and a commandline tool rusdc.
+
+# Installation
+
+just install the gem:
+
+```
+sudo gem install usd
+```
+
+Be aware that you need some compiler-tools and the ruby headers:
+
+```
+sudo apt-get install build-essential ruby-dev
+```
+
+# External Tools
+
+Some external dependencies are:
+
+- [jq](https://stedolan.github.io/jq/) - a great tool for query and manipulate json-data
+- [mlr - Miller](http://johnkerl.org/miller/doc/index.html) - a great tool for data-transforming to and from json, csv and many more
+
+place both binaries `jq` und `mlr` in a path, which is in your PATH-Environment.
+
+# Funktions from the commandline-tool `rusdc`
+
+```
+rusdc
+Commands:
+  rusdc chg_add_nr              # <CO> <CI> - fügt einer CO ein CI hinzu
+  rusdc chg_list_nr             # <CO> - listet alle CIs einer CO
+  rusdc create                  # pipe json-data to create object
+  rusdc field_names             # field_names <object> , listet die Attribute und Beziehungen eines Objektes auf.
+  rusdc find                    # find <object> <where-clause> [fields - Komma getrennt (id,name)] - findet alle Objecte die die wc erfüllen.
+  rusdc get                     # get <object> <cn>
+  rusdc get_attachment_of_ci    # <ci_name> <filename>
+  rusdc get_attachment_of_co    # <co_name> <filename>
+  rusdc help [COMMAND]          # Describe available commands or one specific command
+  rusdc list_attachments_of_ci  # <ci_name>
+  rusdc list_attachments_of_co  # <co_name>
+  rusdc nr_add_child            # <nr-name> <child-name>
+  rusdc nr_changes              # <nr> [inactive-too] - listet alle offenen Change eines nr, bei Bedarf auch inaktive
+  rusdc nr_childs               # nr_childs <ci-name> , listet alle Childs eines CI
+  rusdc nr_incidents            # <nr> [inactive-too] - listet alle offenen Incidents eines nr, bei Bedarf auch inaktive
+  rusdc nr_parents              # nr_parents <ci-name> , listet alle Parents eines CI
+  rusdc update                  # pipe json-data to update object
+```
+
+the german text will be translated soon.
