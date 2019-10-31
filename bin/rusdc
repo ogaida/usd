@@ -7,7 +7,7 @@ require "usd"
 
 class Rusdc < Thor
 
-  desc "chg_add_nr", "<CO> <CI> - fügt einer CO ein CI hinzu"
+  desc "chg_add_nr", "<CO> <CI> - add a CI to a changeorder"
   def chg_add_nr(co, ci)
     template = ERB.new <<-EOF
       {
@@ -25,7 +25,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
-  desc "chg_list_nr", "<CO> - listet alle CIs einer CO"
+  desc "chg_list_nr", "<CO> - list all CIs of one changeorder"
   def chg_list_nr(co)
     invoke 'find', ['lrel_asset_chgnr', %(chg.chg_ref_num = '#{co}'), "nr"], {:format => "mlr", :mlr_format => "xtab"}
   end
@@ -35,7 +35,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => STDIN.read})
   end
 
-  desc "field_names","field_names <object> , listet die Attribute und Beziehungen eines Objektes auf."
+  desc "field_names","<object-type> list all fields of an object including its format"
   def field_names(object)
     e = loadcon.search(object,{'fields' => "*","start" => "1", "size" => "1"})[0]
     e.keys.sort.each do |k|
@@ -46,7 +46,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "find", "find <object> <where-clause> [fields - Komma getrennt (id,name)] - findet alle Objecte die die wc erfüllen."
+  desc "find", "<object-type> <where-clause> [fields - Komma getrennt (id,name)] - finds each object which meets the wc-condition"
   long_desc <<-LONGDESC
 
 
@@ -138,7 +138,7 @@ class Rusdc < Thor
     end # fields check
   end
 
-  desc "get", "get <object> <cn>"
+  desc "get", "<object-type> <common_name> shows one object"
   option :yaml, :type => :boolean, :default => false
   def get(object, cn)
     e = loadcon.request("/caisd-rest/#{object}/COMMON_NAME-#{cn}")
@@ -151,7 +151,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "get_attachment_of_ci", "<ci_name> <filename>"
+  desc "get_attachment_of_ci", "<ci_name> <filename>, download an attachment of a CI and print it out on stdout"
   def get_attachment_of_ci(ciname, filename)
     att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
     att_nr.each do |att|
@@ -162,7 +162,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "get_attachment_of_co", "<co_name> <filename>"
+  desc "get_attachment_of_co", "<co_name> <filename>, download an attachment of a changeorder and print it out on stdout"
   def get_attachment_of_co(coname, filename)
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
@@ -174,7 +174,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "list_attachments_of_ci", "<ci_name>"
+  desc "list_attachments_of_ci", "<ci_name>, list all attachments of a CI"
   def list_attachments_of_ci(ciname)
     att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
     att_nr.each do |att|
@@ -182,7 +182,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "list_attachments_of_co", "<co_name>"
+  desc "list_attachments_of_co", "<co_name>, list all attachments of a changeorder"
   def list_attachments_of_co(coname)
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
@@ -191,7 +191,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "nr_add_child", "<nr-name> <child-name>"
+  desc "nr_add_child", "<nr-name> <child-name>, add one child CI to another CI"
   def nr_add_child(nr, child)
     template = ERB.new <<-EOF
       {
@@ -209,7 +209,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
-  desc "nr_changes", "<nr> [inactive-too] - listet alle offenen Change eines nr, bei Bedarf auch inaktive"
+  desc "nr_changes", "<nr> [inactive-too] - list all open changeorders of one CI"
   option :inactive_too, :type => :boolean, :default => false
   def nr_changes(nr)
     wc_add = (options[:inactive_too] ? "" : " and status.sym in ('Service pending','Work in progress','Customer Pending','Open','Hold')")
@@ -217,20 +217,20 @@ class Rusdc < Thor
     invoke 'find', ['chg', wc, 'chg_ref_num,summary,status'], {:format => "mlr"}
   end
 
-  desc "nr_childs", "nr_childs <ci-name> , listet alle Childs eines CI"
+  desc "nr_childs", "<ci-name> , lists all childs CIs of a specific CI"
   def nr_childs(name)
     loadcon.search("hier",{'fields' => "*","wc" => "parent.name = '#{name}'"}).each do |c|
       puts c["child"]["@COMMON_NAME"]
     end
   end
 
-  desc "nr_incidents", "<nr> [inactive-too] - listet alle offenen Incidents eines nr, bei Bedarf auch inaktive"
+  desc "nr_incidents", "<nr> [inactive-too] -  lists all incident of a specific CI"
   option :inactive_too, :type => :boolean, :default => false
   def nr_incidents(nr)
     invoke 'find', ['in', %(affected_resource.name = '#{nr}'#{options[:inactive_too] ? "" : " and not status.sym in ('Cancelled','Closed')"}), "ref_num,summary,status"], {:format => "mlr"}
   end
 
-  desc "nr_parents", "nr_parents <ci-name> , listet alle Parents eines CI"
+  desc "nr_parents", "nr_parents <ci-name> , lists all parent CIs of a specific CI"
   def nr_parents(name)
     loadcon.search("hier",{'fields' => "*","wc" => "child.name = '#{name}'"}).each do |c|
       puts c["parent"]["@COMMON_NAME"]
