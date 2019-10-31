@@ -118,10 +118,9 @@ class Rusdc < Thor
           end
           jq_mapping_string = jq_mapping.join(",")
           file = Tempfile.new('inner_cmd')
-          cmd = %(jq '[.[]|{#{jq_mapping_string}}]' #{file.path} | mlr --ijson --o#{options[:mlr_format]} cat)
+          cmd = %(jq "[.[]|{#{jq_mapping_string}}]" #{file.path} | mlr --ijson --o#{options[:mlr_format]} cat)
           file.write(e.jp)
           file.close
-          `cp #{file.path} /tmp/test.json`
           puts `#{cmd}`
           file.unlink
         else
