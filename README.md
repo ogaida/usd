@@ -3,21 +3,21 @@
 
 There is a ruby class and a commandline tool rusdc.
 
-# Installation
+# installation
 
 just install the gem:
 
-```
+```bash
 sudo gem install usd
 ```
 
 Be aware that you need some compiler-tools and the ruby headers:
 
-```
+```bash
 sudo apt-get install build-essential ruby-dev
 ```
 
-# External Tools
+# external tools
 
 Some external dependencies are:
 
@@ -26,7 +26,7 @@ Some external dependencies are:
 
 place both binaries `jq` und `mlr` in a path, which is in your PATH-Environment.
 
-# Funktions from the commandline-tool `rusdc`
+# funktions from the commandline-tool `rusdc`
 
 ```
 rusdc
@@ -51,3 +51,29 @@ Commands:
 ```
 
 the german text will be translated soon.
+
+# environment-variables
+
+rusdc needs some environment-variables. there are:
+
+```
+usduser
+usdpass
+usdurl
+```
+
+you may set and export them via script:
+
+```bash
+#!/usr/bin/env bash
+# load with `source ./set_env`
+
+export usduser=<your username>
+export usdurl="http://<your sdm server>:8050"
+if [ -z "$usdpass" ]
+then
+  read -s -p "password for $usduser ? " usdpass
+  echo ""
+  export usdpass
+fi
+```
