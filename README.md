@@ -53,8 +53,6 @@ Commands:
   rusdc update                  # pipe json-data to update object
 ```
 
-the german text will be translated soon.
-
 # environment-variables
 
 rusdc needs some environment-variables. there are:
