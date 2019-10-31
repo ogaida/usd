@@ -6,7 +6,6 @@ require "json"
 require "yaml"
 require 'uri'
 require "time"
-require "ostruct"
 require 'tempfile'
 
 class Usd
@@ -88,7 +87,7 @@ class Usd
 
   def request(uri, hash={})
     RestClient.log = STDOUT if @debug
-    hash = {:method => "get", :header => header(), :unchanged => false, :ostruct => false, :json => "", :base_url => @base_url}.update hash
+    hash = {:method => "get", :header => header(), :unchanged => false, :json => "", :base_url => @base_url}.update hash
     puts "request - hash: #{JSON.pretty_generate(hash)}" if @debug
     if (uri !~ /^http/)
       url = URI.escape("#{hash[:base_url]}#{uri}")
@@ -105,9 +104,7 @@ class Usd
       elsif   hash[:method] =~ /delete/i
         response = RestClient.delete(url, hash[:header])
       end
-      if hash[:ostruct]
-        JSON.parse(response.body, object_class: OpenStruct)
-      elsif hash[:unchanged]
+      if hash[:unchanged]
         response.body
       else
         JSON.parse(response.body)

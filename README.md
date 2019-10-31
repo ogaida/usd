@@ -14,7 +14,11 @@ sudo gem install usd
 Be aware that you need some compiler-tools and the ruby headers:
 
 ```bash
+# ubuntu
 sudo apt-get install build-essential ruby-dev
+# redhat
+yum group install "Development Tools"
+yum install ruby-devel
 ```
 
 # external tools
