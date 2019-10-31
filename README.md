@@ -23,12 +23,11 @@ yum install ruby-devel
 
 # external tools
 
-Some external dependencies are:
+If you use the `rusdc find` command with `--format mlr` option then you need `mlr`.
 
-- [jq](https://stedolan.github.io/jq/) - a great tool for query and manipulate json-data
 - [mlr - Miller](http://johnkerl.org/miller/doc/index.html) - a great tool for data-transforming to and from json, csv and many more
 
-place both binaries `jq` und `mlr` in a path, which is in your PATH-Environment.
+Place the `mlr`-binary in a path, which is in your PATH-Environment.
 
 # funktions from the commandline-tool `rusdc`
 

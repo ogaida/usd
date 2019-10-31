@@ -84,10 +84,32 @@ class Rusdc < Thor
   option :nice_time, :type => :boolean, :default => true
   option :debug, :type => :boolean, :default => false
   def find(object, wc, fields="*")
-    con = loadcon
-    con.debug = options[:debug]
-    e = con.search(object,{'fields' => fields,"wc" => wc})
-    if e.length > 0
+    unless (fields =~ /^[\w\_,@]+$/)
+      puts "fields-problem: there must be only letters, numbers, comma and underscore, nothing else!"
+    else
+      con = loadcon
+      con.debug = options[:debug]
+      e = con.search(object,{'fields' => fields,"wc" => wc})
+      fields_array=fields.split(/,/)
+      e.each do |elem|
+        elem.keys.each do |elem_key|
+          if fields_array.include?(elem_key)
+            if elem[elem_key].class == Hash
+              elem_value = elem[elem_key]["@COMMON_NAME"]
+              elem.delete(elem_key)
+              elem[elem_key] = elem_value
+            end
+          else
+            elem.delete(elem_key)
+          end
+        end
+        # fill up not found keys
+        fields_array.each do |elem_key|
+          unless elem.has_key?(elem_key)
+            elem[elem_key]=""
+          end
+        end
+      end
       if options[:nice_time]
         e.each_index do |i|
           e[i].keys.each do |key|
@@ -103,35 +125,17 @@ class Rusdc < Thor
       when "yaml"
         puts e.to_yaml
       when "mlr"
-        # hierfuer muessen jq und mlr verfuegbar sein
-        if (fields =~ /^[\w\_,@]+$/)
-          fields_array=fields.split(/,/)
-          jq_mapping = []
-          fields_array.each do |key|
-            if e[0].keys.include?(key)
-              if e[0][key].class == Hash
-                jq_mapping << %("#{key}": ."#{key}"."@COMMON_NAME")
-              else
-                jq_mapping << %("#{key}": ."#{key}")
-              end
-            end
-          end
-          jq_mapping_string = jq_mapping.join(",")
-          file = Tempfile.new('inner_cmd')
-          cmd = %(jq "[.[]|{#{jq_mapping_string}}]" #{file.path} | mlr --ijson --o#{options[:mlr_format]} cat)
-          file.write(e.jp)
-          file.close
-          puts `#{cmd}`
-          file.unlink
-        else
-          puts "fields Problem: es sind nur Buchstaben, Ziffern, Komma und Unterstrich zulaessig."
-        end
+        # hierfuer muss mlr verfuegbar sein
+        file = Tempfile.new('json')
+        cmd = %(mlr --ijson --o#{options[:mlr_format]} cat #{file.path})
+        file.write(e.jp)
+        file.close
+        puts `#{cmd}`
+        file.unlink
       else
         puts "das Format #{options[:format]} ist nicht hinterlegt. Es gibt nur json, yaml oder mlr."
       end
-    else
-      puts "keine Einträge gefunden!"
-    end
+    end # fields check
   end
 
   desc "get", "get <object> <cn>"
