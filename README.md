@@ -43,6 +43,7 @@ Commands:
   rusdc get_attachment_of_ci    # <ci_name> <filename>, download an attachment of a CI and print it out on stdout
   rusdc get_attachment_of_co    # <co_name> <filename>, download an attachment of a changeorder and print it out on stdout
   rusdc help [COMMAND]          # Describe available commands or one specific command
+  rusdc in_list_child_ins       # <in> - list all child-incidents of one incident
   rusdc list_attachments_of_ci  # <ci_name>, list all attachments of a CI
   rusdc list_attachments_of_co  # <co_name>, list all attachments of a changeorder
   rusdc nr_add_child            # <nr-name> <child-name>, add one child CI to another CI
