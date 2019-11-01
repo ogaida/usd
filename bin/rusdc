@@ -27,7 +27,7 @@ class Rusdc < Thor
 
   desc "chg_list_nr", "<CO> - list all CIs of one changeorder"
   def chg_list_nr(co)
-    invoke 'find', ['lrel_asset_chgnr', %(chg.chg_ref_num = '#{co}'), "nr"], {:format => "mlr", :mlr_format => "xtab"}
+    invoke 'find', ['lrel_asset_chgnr', %(chg.chg_ref_num = '#{co}'), "nr"], {:format => "mlr"}
   end
 
   desc "create", "pipe json-data to create object"
@@ -88,11 +88,21 @@ class Rusdc < Thor
       puts "fields-problem: there must be only letters, numbers, comma and underscore, nothing else!"
     else
       con = loadcon
+      mlr_array = []
       con.debug = options[:debug]
       e = con.search(object,{'fields' => fields,"wc" => wc})
       fields_array=fields.split(/,/)
       e.each do |elem|
+        # init all requested keys with empty strings, better for mlr format and needed for fields-order
+        fields_array.each do |elem_key|
+            elem[elem_key]="" unless elem.has_key?(elem_key)
+        end
         elem.keys.each do |elem_key|
+          if options[:nice_time]
+            if elem_key =~ /(date|last_mod|warranty_start|warranty_end|time_stamp)$/
+              elem[elem_key]=Time.at(elem[elem_key]).to_s
+            end
+          end
           if fields_array.include?(elem_key)
             if elem[elem_key].class == Hash
               elem_value = elem[elem_key]["@COMMON_NAME"]
@@ -103,32 +113,21 @@ class Rusdc < Thor
             elem.delete(elem_key)
           end
         end
-        # fill up not found keys
-        fields_array.each do |elem_key|
-          unless elem.has_key?(elem_key)
-            elem[elem_key]=""
-          end
-        end
+        # sort the keys
+        mlr_array << Hash[fields_array.map {|k| [k, elem[k]]}].jp
       end
-      if options[:nice_time]
-        e.each_index do |i|
-          e[i].keys.each do |key|
-            if key =~ /(date|last_mod|warranty_start|warranty_end|time_stamp)$/
-              e[i][key]=Time.at(e[i][key]).to_s
-            end
-          end
-        end
-      end
+      mlr = "[" + mlr_array.join(",") + "]"
       case options[:format]
       when "json"
-        puts e.jp
+        puts mlr
       when "yaml"
+        # keys not sorted, maybe a todo
         puts e.to_yaml
       when "mlr"
         # hierfuer muss mlr verfuegbar sein
         file = Tempfile.new('json')
         cmd = %(mlr --ijson --o#{options[:mlr_format]} cat #{file.path})
-        file.write(e.jp)
+        file.write(mlr)
         file.close
         puts `#{cmd}`
         file.unlink
@@ -172,6 +171,11 @@ class Rusdc < Thor
         puts loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true})
       end
     end
+  end
+
+  desc "in_list_child_ins", "<in> - list all child-incidents of one incident"
+  def in_list_child_ins(incident)
+    invoke('find',['cr', "parent.ref_num = '#{incident}'", "ref_num"], {:format => "mlr"})
   end
 
   desc "list_attachments_of_ci", "<ci_name>, list all attachments of a CI"
