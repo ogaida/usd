@@ -7,7 +7,7 @@ require "usd"
 
 class Rusdc < Thor
 
-  desc "chg_add_nr", "<CO> <CI> - add a CI to a changeorder"
+  desc "chg_add_nr <co> <ci>", "add a CI to a changeorder"
   def chg_add_nr(co, ci)
     template = ERB.new <<-EOF
       {
@@ -25,7 +25,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
-  desc "chg_list_nr", "<CO> - list all CIs of one changeorder"
+  desc "chg_list_nr <co>", "list all CIs of one changeorder"
   def chg_list_nr(co)
     invoke 'find', ['lrel_asset_chgnr', %(chg.chg_ref_num = '#{co}'), "nr"], {:format => "mlr"}
   end
@@ -35,7 +35,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => STDIN.read})
   end
 
-  desc "field_names","<object-type> list all fields of an object including its format"
+  desc "field_names <object-type>","list all fields of an object including its format"
   def field_names(object)
     e = loadcon.search(object,{'fields' => "*","start" => "1", "size" => "1"})[0]
     e.keys.sort.each do |k|
@@ -46,46 +46,49 @@ class Rusdc < Thor
     end
   end
 
-  desc "find", "<object-type> <where-clause> [fields - Komma getrennt (id,name)] - finds each object which meets the wc-condition"
+  desc "find <object-type> [where-clause] [fields, comma separated] [options]", "finds each object which meets the wc-condition"
   long_desc <<-LONGDESC
 
 
-    Mit --mlr_format kann man das output-Format von Miller (mlr) ändern auf csv, md (markdown), xtab (sehr übersichtlich), dkvp (Delimited key-value pairs) ..., siehe `mlr --help`
+    with --mlr_format you may change the output-format of Miller (mlr) to csv, md (markdown), xtab , dkvp (delimited key-value pairs) ..., refer `mlr --help`
 
-    Beispiele:
+    Examples:
 
-    - alle aktiven CIs die mit sygosrv beginnen und die Zahl 58 enthalten:
-    ./rusdc find nr "name like 'servername' and delete_flag.sym = 'Active' " "id,name" --format mlr
+    - all grc objects (! don't use this kind of query for objecttype like nr, in, chg etc., whose number of objects is too big)
+    rusdc find grc
 
-    - meine aktiven Incidents:
-    ./rusdc find --format mlr in "assignee.last_name = 'gaida' and status.sym in ('Service pending','Work in progress.','Customer Pending','Open','Hold','Resolved')" ref_num,z_project,summary,status,call_back_date,affected_resource,orig_user_organization
+    - all aktive ci which start with the string `servername`, only print the fields @id and name:
+    rusdc find nr "name like 'servername%' and delete_flag.sym = 'Active' " "@id,name" --format mlr
 
-    - Activity-Log eines Incidents:
-    ./rusdc find alg "call_req_id.ref_num = 'I00001'" "call_req_id,action_desc,analyst,description,time_stamp,type" --format mlr --mlr_format xtab
+    - my active incidents with most importent fields:
+    rusdc find --format mlr in "assignee.last_name = 'gaida' and status.sym in ('Service pending','Work in progress.','Customer Pending','Open','Hold','Resolved')" ref_num,z_project,summary,status,call_back_date,affected_resource,orig_user_organization
 
-    - nur die Beschreibungen Activity-Log eines Incidents:
-    ./rusdc find alg "call_req_id.ref_num = 'I00001'" "description" --format mlr --mlr_format csv
+    - activity-Log of an incident in xtab format:
+    rusdc find alg "call_req_id.ref_num = 'I00001'" "call_req_id,action_desc,analyst,description,time_stamp,type" --format mlr --mlr_format xtab
 
-    - Incidents einer Maschine
-    ./rusdc find in "affected_resource.name = 'servername'" "ref_num,summary" --format mlr
+    - the same but only the field description in csv-format:
+    rusdc find alg "call_req_id.ref_num = 'I00001'" "description" --format mlr --mlr_format csv
 
-    - Kombiniert, alle Activity-Log-Beschreibungen aller Incidents einer Maschine:
-    ./rusdc find alg "call_req_id.affected_resource.name = 'servername'" "description" --format mlr
+    - incidents of the ci with the name `servername`
+    rusdc find in "affected_resource.name = 'servername'" "ref_num,summary" --format mlr
 
-    - Changes einer Maschine:
+    - combination of all activity-log-description of all incidents of a specific ci in pprint-Miller-format:
+    rusdc find alg "call_req_id.affected_resource.name = 'servername'" "description" --format mlr
+
+    - changeorders of a secific ci:
     rusdc find chg "asset.nr.name = 'servername'" "@COMMON_NAME,summary,status" --format mlr
 
-    - Alle Maschinen finden die mit goes beginnen und deren childs auf Linux und Windows prüfen:
+    - find all active ci whose name start with dc and check if they have children like Windows or Linux server:
     for ci in $(rusdc find nr "name like 'dc%' and delete_flag.sym = 'active'" "name" --format mlr | sed '1 d'); do rusdc nr_childs $ci > help ; echo "$ci: $(grep -iP '^(Linux|.*MS windows).*server' help)" ; done
 
   LONGDESC
-  option :format, :type => :string, :default => "json"
-  option :mlr_format, :type => :string, :default => "pprint"
-  option :nice_time, :type => :boolean, :default => true
-  option :debug, :type => :boolean, :default => false
-  def find(object, wc, fields="*")
+  option :format, :type => :string, :default => "json", :banner => "[json|yaml|mlr]"
+  option :mlr_format, :type => :string, :default => "pprint",:banner => "[pprint|json|md|csv|xtab]"
+  option :nice_time, :type => :boolean, :default => true,:banner => "[true|false]"
+  option :debug, :type => :boolean, :default => false,:banner => "[true|false]"
+  def find(object, wc="", fields="@COMMON_NAME")
     unless (fields =~ /^[\w\_,@]+$/)
-      puts "fields-problem: there must be only letters, numbers, comma and underscore, nothing else!"
+      puts "fields-problem: there must be only letters, numbers, comma, the @-sign or underscore, nothing else!"
     else
       con = loadcon
       mlr_array = []
@@ -137,7 +140,7 @@ class Rusdc < Thor
     end # fields check
   end
 
-  desc "get", "<object-type> <common_name> shows one object"
+  desc "get <object-type> <common_name>", "shows one object"
   option :yaml, :type => :boolean, :default => false
   def get(object, cn)
     e = loadcon.request("/caisd-rest/#{object}/COMMON_NAME-#{cn}")
@@ -150,7 +153,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "get_attachment_of_ci", "<ci_name> <filename>, download an attachment of a CI and print it out on stdout"
+  desc "get_attachment_of_ci <ci_name> <filename>", "download an attachment of a CI and print it out on stdout"
   def get_attachment_of_ci(ciname, filename)
     att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
     att_nr.each do |att|
@@ -161,7 +164,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "get_attachment_of_co", "<co_name> <filename>, download an attachment of a changeorder and print it out on stdout"
+  desc "get_attachment_of_co <co_name> <filename>", "download an attachment of a changeorder and print it out on stdout"
   def get_attachment_of_co(coname, filename)
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
@@ -173,12 +176,12 @@ class Rusdc < Thor
     end
   end
 
-  desc "in_list_child_ins", "<in> - list all child-incidents of one incident"
+  desc "in_list_child_ins <in>", "list all child-incidents of one incident"
   def in_list_child_ins(incident)
     invoke('find',['cr', "parent.ref_num = '#{incident}'", "ref_num"], {:format => "mlr"})
   end
 
-  desc "list_attachments_of_ci", "<ci_name>, list all attachments of a CI"
+  desc "list_attachments_of_ci <ci_name>", "list all attachments of a CI"
   def list_attachments_of_ci(ciname)
     att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
     att_nr.each do |att|
@@ -186,7 +189,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "list_attachments_of_co", "<co_name>, list all attachments of a changeorder"
+  desc "list_attachments_of_co <co_name>", "list all attachments of a changeorder"
   def list_attachments_of_co(coname)
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
@@ -195,7 +198,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "nr_add_child", "<nr-name> <child-name>, add one child CI to another CI"
+  desc "nr_add_child <nr-name> <child-name>", "add one child CI to another CI"
   def nr_add_child(nr, child)
     template = ERB.new <<-EOF
       {
@@ -213,7 +216,7 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
-  desc "nr_changes", "<nr> [inactive-too] - list all open changeorders of one CI"
+  desc "nr_changes <nr> [inactive-too]", "list all open changeorders of one CI"
   option :inactive_too, :type => :boolean, :default => false
   def nr_changes(nr)
     wc_add = (options[:inactive_too] ? "" : " and status.sym in ('Service pending','Work in progress','Customer Pending','Open','Hold')")
@@ -221,20 +224,20 @@ class Rusdc < Thor
     invoke 'find', ['chg', wc, 'chg_ref_num,summary,status'], {:format => "mlr"}
   end
 
-  desc "nr_childs", "<ci-name> , lists all childs CIs of a specific CI"
+  desc "nr_childs <ci-name>", "lists all childs CIs of a specific CI"
   def nr_childs(name)
     loadcon.search("hier",{'fields' => "*","wc" => "parent.name = '#{name}'"}).each do |c|
       puts c["child"]["@COMMON_NAME"]
     end
   end
 
-  desc "nr_incidents", "<nr> [inactive-too] -  lists all incident of a specific CI"
+  desc "nr_incidents <nr> [inactive-too]", "lists all incident of a specific CI"
   option :inactive_too, :type => :boolean, :default => false
   def nr_incidents(nr)
     invoke 'find', ['in', %(affected_resource.name = '#{nr}'#{options[:inactive_too] ? "" : " and not status.sym in ('Cancelled','Closed')"}), "ref_num,summary,status"], {:format => "mlr"}
   end
 
-  desc "nr_parents", "nr_parents <ci-name> , lists all parent CIs of a specific CI"
+  desc "nr_parents <ci-name>", "lists all parent CIs of a specific CI"
   def nr_parents(name)
     loadcon.search("hier",{'fields' => "*","wc" => "child.name = '#{name}'"}).each do |c|
       puts c["parent"]["@COMMON_NAME"]
@@ -254,6 +257,45 @@ class Rusdc < Thor
     puts loadcon.update({:type => "json", :data => STDIN.read})
   end
 
+  desc "update_attr <obj> <common_name> <key> <value>", "updates a direct (not referenced) attribute of one object."
+  def update_attr(obj, cn, k, v)
+    template = ERB.new <<-EOF
+      {
+        "<%= obj %>": {
+          "@COMMON_NAME": "<%= cn %>",
+          "<%= k %>": "<%= v %>"
+        }
+      }
+    EOF
+    json = template.result_with_hash({
+        :obj => obj,
+        :cn => cn,
+        :k => k,
+        :v => v
+      })
+    puts loadcon.update({:type => "json", :data => json})
+  end
+
+  desc "update_ref_attr <obj> <common_name> <key> <value>", "updates a referenced attribute of one object."
+  def update_ref_attr(obj, cn, k, v)
+    template = ERB.new <<-EOF
+      {
+        "<%= obj %>": {
+          "@COMMON_NAME": "<%= cn %>",
+          "<%= k %>": {
+            "@COMMON_NAME": "<%= v %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash({
+        :obj => obj,
+        :cn => cn,
+        :k => k,
+        :v => v
+      })
+    puts loadcon.update({:type => "json", :data => json})
+  end
 
   private
 
