@@ -1,5 +1,17 @@
 # changelog
 
+## 0.1.9
+
+- function update_attr will parse with Time-Module if the key match the regular expression: `(date|last_mod|warranty_start|warranty_end|time_stamp)`. And then the value will be change to epoche-seconds
+
+Example:
+
+```
+rusdc update_attr chg CO000001 call_back_date "2020-01-01 11:11:11 +0100"
+```
+
+- new function in rusdc `get_all_attachments_of_co`. In the first implementation it will save all attachments with its original name in the current folder. existing files may be overwritten. Caution!
+
 ## 0.1.8
 
 - new function in rusdc `update_attr`
