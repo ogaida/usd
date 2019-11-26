@@ -21,8 +21,9 @@ class Usd
     @base_url = base_url
     @user = user
     @debug = false
-    if File.exist?(".usd") and hash[:save_access_key]
-      tt = YAML.load(File.open(".usd","r"))
+    remfile = "#{ENV["HOME"]}/.usd"
+    if File.exist?(remfile) and hash[:save_access_key]
+      tt = YAML.load(File.open(remfile,"r"))
       if (tt.expiration_date - Time.now.to_i ) > 900 and tt.base_url == base_url
         @access_key = tt.access_key
         @expiration_date = tt.expiration_date
@@ -56,7 +57,7 @@ class Usd
           @access_key = authData['rest_access']['access_key']
           @expiration_date = authData['rest_access']['expiration_date']
           if hash[:save_access_key]
-            f=File.open(".usd","w")
+            f=File.open(remfile,"w")
             f.puts self.to_yaml
             f.close
           end

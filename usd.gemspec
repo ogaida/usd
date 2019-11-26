@@ -1,7 +1,7 @@
 Gem::Specification.new do |spec|
   spec.name = 'usd'
-  spec.version = '0.1.1'
-  spec.date = '2019-10-31'
+  spec.version = '0.2.0'
+  spec.date = '2019-11-26'
   spec.summary = "SDM REST-API-Calls"
   spec.description = "a Ruby class and a commandlinetool for SDM REST-API-Calls"
   spec.authors = ["Oliver Gaida"]

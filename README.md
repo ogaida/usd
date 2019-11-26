@@ -8,7 +8,7 @@ There is a ruby class and a commandline tool rusdc.
 just install the gem:
 
 ```bash
-sudo gem install usd
+gem install usd
 ```
 
 Be aware that you need some compiler-tools and the ruby headers:
@@ -27,7 +27,7 @@ If you use the `rusdc find` command with `--format mlr` option then you need `ml
 
 - [mlr - Miller](http://johnkerl.org/miller/doc/index.html) - a great tool for data-transforming to and from json, csv and many more
 
-Place the `mlr`-binary in a path, which is in your PATH-Environment.
+Place the `mlr`-binary in a path, which is in your PATH-Environment. Download-Url for mlr-releases: [https://github.com/johnkerl/miller/releases](https://github.com/johnkerl/miller/releases)
 
 # functions from the commandline-tool `rusdc`
 

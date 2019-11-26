@@ -35,13 +35,15 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => STDIN.read})
   end
 
-  desc "field_names <object-type>","list all fields of an object including its format"
-  def field_names(object)
-    e = loadcon.search(object,{'fields' => "*","start" => "1", "size" => "1"})[0]
+  desc "field_names <object-type> [wc]","list all fields of an object including its format"
+  def field_names(object,wc="")
+    e = loadcon.search(object,{'fields' => "*","wc"=>wc,"start" => "1", "size" => "1"})[0]
     e.keys.sort.each do |k|
-      puts "#{k} (#{e[k].class})"
       if e[k].class  == Hash
+        puts "#{k} (#{e[k].class}):"
         puts e[k].jp
+      else
+        puts "#{k} (#{e[k].class}) : #{e[k]}"
       end
     end
   end
@@ -140,10 +142,15 @@ class Rusdc < Thor
     end # fields check
   end
 
-  desc "get <object-type> <common_name>", "shows one object"
+  desc "get <object-type> <common_name|id>", "shows one object by name or id"
+  option :by_id, :type => :boolean, :default => false
   option :yaml, :type => :boolean, :default => false
-  def get(object, cn)
-    e = loadcon.request("/caisd-rest/#{object}/COMMON_NAME-#{cn}")
+  def get(object, ident)
+    if options[:by_id] || ident =~ /^U'[0-9A-F]/i
+      e = loadcon.request("/caisd-rest/#{object}/#{ident}")
+    else
+      e = loadcon.request("/caisd-rest/#{object}/COMMON_NAME-#{ident}")
+    end
     if e.class == Hash
       puts options[:yaml] ?  e[object].to_yaml : e[object].jp
     elsif e.message == "409 Conflict"
@@ -151,6 +158,22 @@ class Rusdc < Thor
     else
       puts e.response
     end
+  end
+
+  desc "get_all_attachments_of_co <co_name>", "get all attachments of a changeorder and save all these to current folder"
+  def get_all_attachments_of_co(coname)
+    # todo : care more about eml-multipart: https://github.com/mikel/mail
+    chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
+    att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
+    att_nr.each do |att|
+      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      filename = attmnt["orig_file_name"]
+      puts "save #{filename}"
+      f = File.open(filename, 'w')
+      f.write(loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true}))
+      f.close
+    end
+    puts "all attachments were saved"
   end
 
   desc "get_attachment_of_ci <ci_name> <filename>", "download an attachment of a CI and print it out on stdout"
@@ -258,21 +281,35 @@ class Rusdc < Thor
   end
 
   desc "update_attr <obj> <common_name> <key> <value>", "updates a direct (not referenced) attribute of one object."
+  option :plain_text, :type => :boolean, :default => false
   def update_attr(obj, cn, k, v)
-    template = ERB.new <<-EOF
-      {
-        "<%= obj %>": {
-          "@COMMON_NAME": "<%= cn %>",
-          "<%= k %>": "<%= v %>"
+    if k =~ /(date|last_mod|warranty_start|warranty_end|time_stamp)$/
+      v=Time.parse(v).to_i
+    end
+    if options[:plain_text]
+      data={
+        obj => {
+          "@COMMON_NAME" => cn,
+          k => v
         }
       }
-    EOF
-    json = template.result_with_hash({
+      json = JSON.pretty_generate(data)
+    else
+      template = ERB.new <<-EOF
+        {
+          "<%= obj %>": {
+            "@COMMON_NAME": "<%= cn %>",
+            "<%= k %>": "<%= v %>"
+          }
+        }
+      EOF
+      json = template.result_with_hash({
         :obj => obj,
         :cn => cn,
         :k => k,
         :v => v
       })
+    end
     puts loadcon.update({:type => "json", :data => json})
   end
 
@@ -296,6 +333,28 @@ class Rusdc < Thor
       })
     puts loadcon.update({:type => "json", :data => json})
   end
+
+  desc "update_ref_attr_by_id <obj> <common_name> <key> <id>", "updates a referenced attribute of one object by id"
+  def update_ref_attr_by_id(obj, cn, k, v)
+    template = ERB.new <<-EOF
+      {
+        "<%= obj %>": {
+          "@COMMON_NAME": "<%= cn %>",
+          "<%= k %>": {
+            "@id": "<%= v %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash({
+        :obj => obj,
+        :cn => cn,
+        :k => k,
+        :v => v
+      })
+    puts loadcon.update({:type => "json", :data => json})
+  end
+
 
   private
 

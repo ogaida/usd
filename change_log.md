@@ -1,5 +1,24 @@
 # changelog
 
+## 0.2.0
+
+- function `update_attr` has a new option for putting plain text with linebreaks in it.
+
+- new funciton `update_ref_attr_by_id` sometimes there are problem if you try to update via common_name, so here you can use the `@id` instead.
+
+- `rusdc get` now supports id too
+
+- rusdc field_names , now there is a second parameter [wc]. So that's a way to show all fields of a special opbject.
+
+Example:
+
+```
+rusdc field_names wf "@id = 1535123" | head -3
+@COMMON_NAME (String) :
+@REL_ATTR (String) : 1535123
+@id (String) : 1535123
+```
+
 ## 0.1.9
 
 - function update_attr will parse with Time-Module if the key match the regular expression: `(date|last_mod|warranty_start|warranty_end|time_stamp)`. And then the value will be change to epoche-seconds
