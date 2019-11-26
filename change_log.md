@@ -1,6 +1,6 @@
 # changelog
 
-## 0.2.0
+## 0.2.1
 
 - function `update_attr` has a new option for putting plain text with linebreaks in it.
 
