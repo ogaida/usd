@@ -1,5 +1,39 @@
 # changelog
 
+## 0.2.2
+
+- extented function `update_attr`, now you may use a where-clause instead of a `common_name` to filter the object(s) to update
+
+Example 1:
+
+update many CIs with one statement...
+
+```bash
+$ rusdc find nr "name like 'server[12]'" name,description --format mlr
+name    description
+server1 vorher
+server2 vorher
+$ rusdc update_attr nr "name like 'server[12]'" description "new description"
+$ rusdc find nr "name like 'server[12]'" name,description --format mlr
+name    description
+server1 new description
+server2 new description
+```
+
+Example 2:
+
+update a CI which has a special attribute value:
+
+```bash
+$ rusdc find nr "serial_number = 'ABC123ABC987'" name,serial_number,warranty_end --format mlr
+name    serial_number warranty_end
+server1 ABC123ABC987  2020-11-30 00:00:00 +0100
+$ rusdc update_attr nr "serial_number = 'ABC123ABC987'" warranty_end "01.02.2022"
+$ rusdc find nr "serial_number = 'ABC123ABC987'" name,serial_number,warranty_end --format mlr
+name    serial_number warranty_end
+server1 ABC123ABC987  2022-02-01 00:00:00 +0100
+```
+
 ## 0.2.1
 
 - function `update_attr` has a new option for putting plain text with linebreaks in it.

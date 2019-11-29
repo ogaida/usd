@@ -280,36 +280,77 @@ class Rusdc < Thor
     puts loadcon.update({:type => "json", :data => STDIN.read})
   end
 
-  desc "update_attr <obj> <common_name> <key> <value>", "updates a direct (not referenced) attribute of one object."
+  desc "update_attr <obj> <common_name|wc> <key> <value>", "updates a direct (not referenced) attribute of one or more objects."
   option :plain_text, :type => :boolean, :default => false
   def update_attr(obj, cn, k, v)
     if k =~ /(date|last_mod|warranty_start|warranty_end|time_stamp)$/
       v=Time.parse(v).to_i
     end
-    if options[:plain_text]
-      data={
-        obj => {
-          "@COMMON_NAME" => cn,
-          k => v
-        }
-      }
-      json = JSON.pretty_generate(data)
+    if cn =~ /([<>=]| like )/
+      obj_arr=loadcon.search(obj,{'fields' => "@id","wc"=>"#{cn} and delete_flag.sym = 'Active'"})
+      obj_arr.each do |inner_obj|
+        inner_id=inner_obj["@id"]
+        template = ERB.new <<-EOF
+          {
+            "<%= obj %>": {
+              "@id": "<%= id %>",
+              "<%= k %>": "<%= v %>"
+            }
+          }
+        EOF
+        json = template.result_with_hash({
+            :obj => obj,
+            :id => inner_id,
+            :k => k,
+            :v => v
+          })
+        puts loadcon.update({:type => "json", :data => json})
+      end
     else
-      template = ERB.new <<-EOF
-        {
-          "<%= obj %>": {
-            "@COMMON_NAME": "<%= cn %>",
-            "<%= k %>": "<%= v %>"
+      if options[:plain_text]
+        data={
+          obj => {
+            "@COMMON_NAME" => cn,
+            k => v
           }
         }
-      EOF
-      json = template.result_with_hash({
+        json = JSON.pretty_generate(data)
+      else
+        template = ERB.new <<-EOF
+          {
+            "<%= obj %>": {
+              "@COMMON_NAME": "<%= cn %>",
+              "<%= k %>": "<%= v %>"
+            }
+          }
+        EOF
+        json = template.result_with_hash({
+          :obj => obj,
+          :cn => cn,
+          :k => k,
+          :v => v
+        })
+      end
+      puts loadcon.update({:type => "json", :data => json})
+    end
+  end
+
+  desc "update_attr_by_id <obj> <id> <key> <value>", "updates a plain attribute of one object by id, does not work"
+  def update_attr_by_id(obj, id, k, v)
+    template = ERB.new <<-EOF
+      {
+        "<%= obj %>": {
+          "@id": "<%= id %>",
+          "<%= k %>": "<%= v %>"
+        }
+      }
+    EOF
+    json = template.result_with_hash({
         :obj => obj,
-        :cn => cn,
+        :id => id,
         :k => k,
         :v => v
       })
-    end
     puts loadcon.update({:type => "json", :data => json})
   end
 
@@ -334,12 +375,12 @@ class Rusdc < Thor
     puts loadcon.update({:type => "json", :data => json})
   end
 
-  desc "update_ref_attr_by_id <obj> <common_name> <key> <id>", "updates a referenced attribute of one object by id"
-  def update_ref_attr_by_id(obj, cn, k, v)
+  desc "update_ref_attr_by_id <obj> <id> <key> <value>", "updates a referenced attribute of one object by id"
+  def update_ref_attr_by_id(obj, id, k, v)
     template = ERB.new <<-EOF
       {
         "<%= obj %>": {
-          "@COMMON_NAME": "<%= cn %>",
+          "@id": "<%= id %>",
           "<%= k %>": {
             "@id": "<%= v %>"
           }
@@ -348,7 +389,7 @@ class Rusdc < Thor
     EOF
     json = template.result_with_hash({
         :obj => obj,
-        :cn => cn,
+        :id => id,
         :k => k,
         :v => v
       })

@@ -147,8 +147,13 @@ class Usd
     end
     puts "update - data: #{JSON.pretty_generate(data)}" if @debug
     object = data.keys[0]
-    cn = data[object]["@COMMON_NAME"]
-    request("/caisd-rest/#{object}/COMMON_NAME-#{cn}",{:method => "put", :json => data.to_json, :header => header({'X-Obj-Attrs' => 'COMMON_NAME'})})
+    if  data[object].has_key?("@id")
+      request("/caisd-rest/#{object}/#{data[object]["@id"]}",{:method => "put", :json => data.to_json, :header => header({'X-Obj-Attrs' => 'COMMON_NAME'})})
+    elsif data[object].has_key?("@COMMON_NAME")
+      request("/caisd-rest/#{object}/COMMON_NAME-#{data[object]["@COMMON_NAME"]}",{:method => "put", :json => data.to_json, :header => header({'X-Obj-Attrs' => 'COMMON_NAME'})})
+    else
+      puts "specify @COMMON_NAME or @id at least."
+    end
   end
 
   def set_url_parm(params_hash,attribute_name,default)
