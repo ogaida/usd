@@ -1,12 +1,38 @@
 # changelog
 
+## 0.2.3
+
+- new function `in_add_2_chg` - add incident to changeorder
+
+Usage:
+
+```
+
+  rusdc in_add_2_chg <changeorder> <incident>
+```
+
+Example:
+
+```
+$ rusdc find in "change.chg_ref_num = 'CO000001'"  --format mlr
+@COMMON_NAME
+I000001
+I000002
+$ rusdc in_add_2_chg CO000001 I000003
+$ rusdc find in "change.chg_ref_num = 'CO000001'"  --format mlr
+@COMMON_NAME
+I000001
+I000002
+I000003
+```
+
 ## 0.2.2
 
 - extented function `update_attr`, now you may use a where-clause instead of a `common_name` to filter the object(s) to update
 
 Example 1:
 
-update many CIs with one statement...
+update many CIs with one statement...b
 
 ```bash
 $ rusdc find nr "name like 'server[12]'" name,description --format mlr

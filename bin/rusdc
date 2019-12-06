@@ -199,6 +199,11 @@ class Rusdc < Thor
     end
   end
 
+  desc "in_add_2_chg <changeorder> <incident>", "add incident to changeorder"
+  def in_add_2_chg(chg, incident)
+    invoke('update_ref_attr',['in', incident, 'change', chg])
+  end
+
   desc "in_list_child_ins <in>", "list all child-incidents of one incident"
   def in_list_child_ins(incident)
     invoke('find',['cr', "parent.ref_num = '#{incident}'", "ref_num"], {:format => "mlr"})
@@ -375,7 +380,7 @@ class Rusdc < Thor
     puts loadcon.update({:type => "json", :data => json})
   end
 
-  desc "update_ref_attr_by_id <obj> <id> <key> <value>", "updates a referenced attribute of one object by id"
+  desc "update_ref_attr_by_id <obj> <id> <key> <value_id>", "updates a referenced attribute of one object_id by value-id"
   def update_ref_attr_by_id(obj, id, k, v)
     template = ERB.new <<-EOF
       {
