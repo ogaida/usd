@@ -1,6 +1,6 @@
 # rusdc changelog
 
-## 0.2.4 - coming soon
+## 0.2.4
 
 - find function has exitcode > 0 if no records has been found
 
