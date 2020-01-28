@@ -1,4 +1,23 @@
-# changelog
+# rusdc changelog
+
+## 0.2.4 - coming soon
+
+- find function has exitcode > 0 if no records has been found
+
+```
+$ rusdc find nr "name = 'not_here'"  || echo 'i am not here, please create me'
+[]
+i am not here, please create me
+$ rusdc find cnt "last_name = 'Gaida'"  && echo 'i am here, you may update me'
+[{
+  "@COMMON_NAME": "Gaida, Oliver "
+}]
+i am here, you may update me
+```
+
+### fixes
+
+- attachment with spaces in path could not be downloaded
 
 ## 0.2.3
 

@@ -89,6 +89,7 @@ class Rusdc < Thor
   option :nice_time, :type => :boolean, :default => true,:banner => "[true|false]"
   option :debug, :type => :boolean, :default => false,:banner => "[true|false]"
   def find(object, wc="", fields="@COMMON_NAME")
+    exitcode=0
     unless (fields =~ /^[\w\_,@]+$/)
       puts "fields-problem: there must be only letters, numbers, comma, the @-sign or underscore, nothing else!"
     else
@@ -96,6 +97,7 @@ class Rusdc < Thor
       mlr_array = []
       con.debug = options[:debug]
       e = con.search(object,{'fields' => fields,"wc" => wc})
+      exitcode=1  if e.count == 0
       fields_array=fields.split(/,/)
       e.each do |elem|
         # init all requested keys with empty strings, better for mlr format and needed for fields-order
@@ -125,9 +127,11 @@ class Rusdc < Thor
       case options[:format]
       when "json"
         puts mlr
+        exit exitcode
       when "yaml"
         # keys not sorted, maybe a todo
         puts e.to_yaml
+        exit exitcode
       when "mlr"
         # hierfuer muss mlr verfuegbar sein
         file = Tempfile.new('json')
@@ -136,8 +140,10 @@ class Rusdc < Thor
         file.close
         puts `#{cmd}`
         file.unlink
+        exit exitcode
       else
         puts "das Format #{options[:format]} ist nicht hinterlegt. Es gibt nur json, yaml oder mlr."
+        exit 2
       end
     end # fields check
   end
@@ -166,7 +172,8 @@ class Rusdc < Thor
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
     att_nr.each do |att|
-      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      #attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      attmnt = loadcon.request("/caisd-rest/attmnt/#{att["attmnt"]["@id"]}")["attmnt"]
       filename = attmnt["orig_file_name"]
       puts "save #{filename}"
       f = File.open(filename, 'w')
