@@ -83,3 +83,14 @@ then
   export usdpass
 fi
 ```
+
+# example - find records
+
+```bash
+$ rusdc find nr "name like 'foo%'" name,description --format mlr
+name  description
+foo1  foo QS
+foo2  foo TEST
+```
+
+more examples under [find examples-Wikipage](https://github.com/ogaida/usd/wiki/find-examples) or in the [change_log](https://github.com/ogaida/usd/blob/master/change_log.md)

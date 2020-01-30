@@ -1,5 +1,11 @@
 # rusdc changelog
 
+## 0.2.4.1
+
+### fixes
+
+- `rusdc get_attachment_of_ci` : attachment with spaces in path could not be downloaded
+
 ## 0.2.4
 
 - find function has exitcode > 0 if no records has been found
@@ -17,7 +23,7 @@ i am here, you may update me
 
 ### fixes
 
-- attachment with spaces in path could not be downloaded
+- `rusdc get_all_attachments_of_co` : attachment with spaces in path could not be downloaded
 
 ## 0.2.3
 
