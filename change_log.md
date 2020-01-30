@@ -1,5 +1,14 @@
 # rusdc changelog
 
+## 0.2.4.2
+
+the same fixes as in 0.2.4.1 for:
+
+```
+rusdc list_attachments_of_ci <ci_name>
+rusdc list_attachments_of_co <co_name>    
+```
+
 ## 0.2.4.1
 
 ### fixes

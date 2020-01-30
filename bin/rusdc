@@ -198,7 +198,7 @@ class Rusdc < Thor
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
     att_nr.each do |att|
-      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]
+      attmnt = loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@id"]}")["attmnt"]
       if attmnt["orig_file_name"] == filename
         puts loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true})
       end
@@ -219,7 +219,7 @@ class Rusdc < Thor
   def list_attachments_of_ci(ciname)
     att_nr = loadcon.search("lrel_attachments_nr",{'fields' => "attmnt","wc" => "nr.name = '#{ciname}'"})
     att_nr.each do |att|
-      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]["orig_file_name"]
+      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@id"]}")["attmnt"]["orig_file_name"]
     end
   end
 
@@ -228,7 +228,7 @@ class Rusdc < Thor
     chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
     att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
     att_nr.each do |att|
-      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@COMMON_NAME"]}")["attmnt"]["orig_file_name"]
+      puts loadcon.request("/caisd-rest/attmnt/COMMON_NAME-#{att["attmnt"]["@id"]}")["attmnt"]["orig_file_name"]
     end
   end
 
