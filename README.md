@@ -21,6 +21,10 @@ yum group install "Development Tools"
 yum install ruby-devel
 ```
 
+# documentation
+
+see [https://github.com/ogaida/usd/wiki](https://github.com/ogaida/usd/wiki)
+
 # external tools
 
 If you use the `rusdc find` command with `--format mlr` option then you need `mlr`.

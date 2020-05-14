@@ -1,5 +1,11 @@
 # rusdc changelog
 
+## 0.2.5.2 - not yet published
+
+#### fixes:
+
+- rusdc - line 110: more robust when querying date fields
+
 ## 0.2.4.2
 
 the same fixes as in 0.2.4.1 for:
