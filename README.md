@@ -25,6 +25,10 @@ yum install ruby-devel
 
 see [https://github.com/ogaida/usd/wiki](https://github.com/ogaida/usd/wiki)
 
+## bash-completion
+
+see [https://github.com/ogaida/usd/wiki/bash-completion](https://github.com/ogaida/usd/wiki/bash-completion)
+
 # external tools
 
 If you use the `rusdc find` command with `--format mlr` option then you need `mlr`.
