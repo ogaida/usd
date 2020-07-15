@@ -250,6 +250,29 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
+  # $ rusdc find lrel_oenv_orgref "nr.name like 'servername1'" org
+  # [{
+  #   "org": "Orname1"
+  # }]
+
+  desc "nr_add_org <nr> <org>", "add an Organisation to a ConfigurationItem"
+  def nr_add_org(nr, org)
+    template = ERB.new <<-EOF
+      {
+        "lrel_oenv_orgref": {
+          "nr": {
+            "@id": "<%= uid_nr %>"
+          },
+          "org": {
+            "@id": "<%= uid_org %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash(:uid_org => loadcon.request("/caisd-rest/org/COMMON_NAME-#{org}")["org"]["@id"], :uid_nr => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{nr}")["nr"]["@id"])
+    puts loadcon.create({:type => "json", :data => json})
+  end
+
   desc "nr_changes <nr> [inactive-too]", "list all open changeorders of one CI"
   option :inactive_too, :type => :boolean, :default => false
   def nr_changes(nr)

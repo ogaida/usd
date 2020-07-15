@@ -46,24 +46,25 @@ rusdc create                                                                 # p
 rusdc field_names <object-type> [wc]                                         # list all fields of an object including its format
 rusdc find <object-type> [where-clause] [fields, comma separated] [options]  # finds each object which meets the wc-condition
 rusdc get <object-type> <common_name|id>                                     # shows one object by name or id
-rusdc get_all_attachments_of_co <co_name>                                    # get all attachments of a changeorder and save all these to current folder
-rusdc get_attachment_of_ci <ci_name> <filename>                              # download an attachment of a CI and print it out on stdout
-rusdc get_attachment_of_co <co_name> <filename>                              # download an attachment of a changeorder and print it out on stdout
+rusdc get_all_attachments_of_co <co_name>                                    # get all attachments of a changeorder and save all th...
+rusdc get_attachment_of_ci <ci_name> <filename>                              # download an attachment of a CI and print it out on s...
+rusdc get_attachment_of_co <co_name> <filename>                              # download an attachment of a changeorder and print it...
 rusdc help [COMMAND]                                                         # Describe available commands or one specific command
 rusdc in_add_2_chg <changeorder> <incident>                                  # add incident to changeorder
 rusdc in_list_child_ins <in>                                                 # list all child-incidents of one incident
 rusdc list_attachments_of_ci <ci_name>                                       # list all attachments of a CI
 rusdc list_attachments_of_co <co_name>                                       # list all attachments of a changeorder
 rusdc nr_add_child <nr-name> <child-name>                                    # add one child CI to another CI
+rusdc nr_add_org <nr> <org>                                                  # add an Organisation to a ConfigurationItem
 rusdc nr_changes <nr> [inactive-too]                                         # list all open changeorders of one CI
 rusdc nr_childs <ci-name>                                                    # lists all childs CIs of a specific CI
 rusdc nr_incidents <nr> [inactive-too]                                       # lists all incident of a specific CI
 rusdc nr_parents <ci-name>                                                   # lists all parent CIs of a specific CI
 rusdc update                                                                 # pipe json-data to update object
-rusdc update_attr <obj> <common_name|wc> <key> <value>                       # updates a direct (not referenced) attribute of one or more objects.
-rusdc update_attr_by_id <obj> <id> <key> <value>                             # updates a plain attribute of one object by id, does not work
+rusdc update_attr <obj> <common_name|wc> <key> <value>                       # updates a direct (not referenced) attribute of one o...
+rusdc update_attr_by_id <obj> <id> <key> <value>                             # updates a plain attribute of one object by id, does ...
 rusdc update_ref_attr <obj> <common_name> <key> <value>                      # updates a referenced attribute of one object.
-rusdc update_ref_attr_by_id <obj> <id> <key> <value_id>                      # updates a referenced attribute of one object_id by value-id
+rusdc update_ref_attr_by_id <obj> <id> <key> <value_id>                      # updates a referenced attribute of one object_id by v...
 ```
 
 # environment-variables

@@ -1,6 +1,8 @@
 # rusdc changelog
 
-## 0.2.5.2 - not yet published
+## 0.2.5.3
+
+- neu function : `rusdc nr_add_org <nr> <org>  # add an Organisation to a ConfigurationItem`
 
 #### fixes:
 
