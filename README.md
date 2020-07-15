@@ -23,7 +23,8 @@ yum install ruby-devel
 
 # documentation
 
-see [https://github.com/ogaida/usd/wiki](https://github.com/ogaida/usd/wiki)
+- see [https://github.com/ogaida/usd/wiki](https://github.com/ogaida/usd/wiki)
+- if you are looking for dependencies in between the objects, objectnames or relational objects, then have a look at [techdocs.broadcom.com](https://techdocs.broadcom.com/content/broadcom/techdocs/us/en/ca-enterprise-software/business-management/ca-service-management/14-1/reference/ca-service-desk-manager-reference-commands/objects-and-attributes.html)
 
 ## bash-completion
 
