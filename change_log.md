@@ -1,5 +1,83 @@
 # rusdc changelog
 
+## 0.3
+
+- some common_name resolution
+
+```ruby
+class Usd
+  CN={
+    "chg" => "chg_ref_num",
+    "cnt" => "combo_name",
+    "arcpur_rule" => "name",
+    "ca_tou" => "name",
+    "cost_cntr" => "name",
+    "country" => "name",
+    "dept" => "name",
+    "gl_code" => "name",
+    "job_func" => "name",
+    "loc" => "name",
+    "nr" => "name",
+    "opsys" => "name",
+    "org" => "name",
+    "tab" => "name",
+    "auto_close" => "sym",
+    "aty" => "sym",
+    "act_type_assoc" => "sym",
+    "ca_cmpny" => "sym",
+    "closure_code" => "sym",
+    "cmth" => "sym",
+    "symptom_code" => "sym",
+    "state" => "sym",
+    "crt" => "sym",
+    "ctab" => "sym",
+    "ctp" => "sym",
+    "dcon_typ" => "sym",
+    "dlgsrvr" => "sym",
+    "dmn" => "sym",
+    "doc_rep" => "sym",
+    "fmgrp" => "sym",
+    "ical_alarm" => "sym",
+    "ical_event_template" => "sym",
+    "imp" => "sym",
+    "intfc" => "sym",
+    "kwrd" => "sym",
+    "mfrmod" => "sym",
+    "mgsstat" => "sym",
+    "nrf" => "sym",
+    "options" => "sym",
+    "outage_type" => "sym",
+    "perscnt" => "sym",
+    "position" => "sym",
+    "pr_trans" => "sym",
+    "prod" => "sym",
+    "quick_tpl_types" => "sym",
+    "rc" => "sym",
+    "resocode" => "sym",
+    "resomethod" => "sym",
+    "response" => "sym",
+    "rrf" => "sym",
+    "rss" => "sym",
+    "seq" => "sym",
+    "sev" => "sym",
+    "site" => "sym",
+    "slatpl" => "sym",
+    "special_handling" => "sym",
+    "svc_contract" => "sym",
+    "typecnt" => "sym",
+    "tz" => "sym",
+    "tspan" => "sym",
+    "transition_type" => "sym",
+    "urg" => "sym",
+    "vpt" => "sym",
+    "wrkshft" => "sym",
+    "cr" => "ref_num",
+    "in" => "ref_num",
+    "pr" => "ref_num"
+  }
+end
+```
+
 ## 0.2.5.3
 
 - neu function : `rusdc nr_add_org <nr> <org>  # add an Organisation to a ConfigurationItem`

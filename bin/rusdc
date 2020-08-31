@@ -250,11 +250,6 @@ class Rusdc < Thor
     puts loadcon.create({:type => "json", :data => json})
   end
 
-  # $ rusdc find lrel_oenv_orgref "nr.name like 'servername1'" org
-  # [{
-  #   "org": "Orname1"
-  # }]
-
   desc "nr_add_org <nr> <org>", "add an Organisation to a ConfigurationItem"
   def nr_add_org(nr, org)
     template = ERB.new <<-EOF
@@ -406,7 +401,13 @@ class Rusdc < Thor
         :k => k,
         :v => v
       })
-    puts loadcon.update({:type => "json", :data => json})
+    data = loadcon.update({:type => "json", :data => json})
+    if data.class == RestClient::BadRequest
+      puts "direkte Ausführung bekommt einen BadRequest, versuche Update über IDs. #{Usd::CN["cnt"]}"
+      #find(obj, wc="obj", fields="@COMMON_NAME")
+    else
+      puts data
+    end
   end
 
   desc "update_ref_attr_by_id <obj> <id> <key> <value_id>", "updates a referenced attribute of one object_id by value-id"
