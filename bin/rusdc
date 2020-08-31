@@ -127,6 +127,7 @@ class Rusdc < Thor
       case options[:format]
       when "json"
         puts mlr
+        e
         exit exitcode
       when "yaml"
         # keys not sorted, maybe a todo
@@ -383,8 +384,8 @@ class Rusdc < Thor
     puts loadcon.update({:type => "json", :data => json})
   end
 
-  desc "update_ref_attr <obj> <common_name> <key> <value>", "updates a referenced attribute of one object."
-  def update_ref_attr(obj, cn, k, v)
+  desc "update_ref_attr <obj> <common_name> <key> <value> [ref_obj=nr]", "updates a referenced attribute of one object."
+  def update_ref_attr(obj, cn, k, v, ref_obj = "nr")
     template = ERB.new <<-EOF
       {
         "<%= obj %>": {
@@ -403,8 +404,10 @@ class Rusdc < Thor
       })
     data = loadcon.update({:type => "json", :data => json})
     if data.class == RestClient::BadRequest
-      puts "direkte Ausführung bekommt einen BadRequest, versuche Update über IDs. #{Usd::CN["cnt"]}"
-      #find(obj, wc="obj", fields="@COMMON_NAME")
+      puts "direkte Ausführung bekommt einen BadRequest, versuche Update über IDs. #{Usd::CN[obj]}"
+      cn_id = loadcon.search(obj,{'fields' => "@id","wc" => "#{Usd::CN[obj]} = '#{cn}' and delete_flag = 0"})[0]["@id"]
+      value_id = loadcon.search(ref_obj,{'fields' => "@id","wc" => "#{Usd::CN[obj]} = '#{v}' and delete_flag = 0"})[0]["@id"]
+      invoke "update_ref_attr_by_id", [obj, cn_id, k, value_id]
     else
       puts data
     end

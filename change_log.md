@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.0
+
+- `update_ref_attr` rusdc-function fetches the IDs to update the object by itself.
+
 ## 0.3
 
 - some common_name resolution
