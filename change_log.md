@@ -1,6 +1,11 @@
 # rusdc changelog
 
-## 1.0
+## 1.2
+
+- now in Usd.search function:
+  - whereclause is enriched with "common_name like '% wc%'" if it is not a valid whereclause.
+
+## 1.0 and 1.1
 
 - `update_ref_attr` rusdc-function fetches the IDs to update the object by itself.
 

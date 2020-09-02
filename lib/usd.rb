@@ -248,6 +248,14 @@ class Usd
     attr.push set_url_parm(params,"start","1")
     attr.push set_url_parm(params,"size","50")
     attr.push set_url_parm(params,"WC","")
+    # if wc contains no sql-compare operater, it will be changed to "COMMON_NAME like '%<wc-before>%'"
+    wc = attr.pop
+    wc.gsub!(/^WC=/,'')
+    if ([" like ","<",">","="," is "].find {|e| wc =~ /#{e}/}).nil?
+      wc = "#{CN[object]} like '%#{wc}%'"
+    end
+    attr.push "WC=#{wc}"
+    # puts attr.jp # debug
     fields = set_param(params,"fields","COMMON_NAME,id")
     query_string=attr.join("&")
     res_rdata = request("/caisd-rest/#{object}?#{query_string}",{:method => "get", :header => header({'X-Obj-Attrs' => fields})})
