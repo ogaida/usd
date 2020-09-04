@@ -3,6 +3,8 @@
 
 There is a ruby class and a commandline tool rusdc.
 
+<script id="asciicast-7zw3RLpikFluqX9XJMxCpMEmS" src="https://asciinema.org/a/7zw3RLpikFluqX9XJMxCpMEmS.js" async></script>
+
 # installation
 
 just install the gem:
