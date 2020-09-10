@@ -1,5 +1,15 @@
 # rusdc changelog
 
+## 1.3.1
+
+- new functions:
+  - `chg_add_attachment`
+  - `nr_add_attachment`
+  - `in_chg_add_attachment`
+  - `vcard_via_email`
+
+with the first three funtions you are able to upload files to changeorders, configurationitems and incidents and it does not matter if it is text or binary. the last new function creates vcards in version 2.1 from a contact via its email as identifier.
+
 ## 1.2
 
 - now in Usd.search function:
