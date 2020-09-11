@@ -40,8 +40,6 @@ If you use the `rusdc find` command with `--format mlr` option then you need `ml
 
 Place the `mlr`-binary in a path, which is in your PATH-Environment. Download-Url for mlr-releases: [https://github.com/johnkerl/miller/releases](https://github.com/johnkerl/miller/releases).
 
-For uloading attachments `unix2dos` and `base64` is used. 
-
 # functions from the commandline-tool `rusdc`
 
 ```

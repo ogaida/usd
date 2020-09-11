@@ -2,7 +2,7 @@
 
 ## 1.3.3
 
-- private `Usd` Class funktion changed. Instead using `base64` and `unix2dos` binaries, we use Base64-Ruby-Class now. It is already required by usd.
+- private `rusdc`-funktion `upload_attachment` changed. Instead using `base64` and `unix2dos` binaries, we use Base64-Ruby-Class now. It is already required by usd.
 
 ## 1.3.2
 
