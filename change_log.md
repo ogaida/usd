@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.3.4
+
+- move function `upload_attachment` from `bin/rusdc` to `lib/usd`.
+
 ## 1.3.3
 
 - private `rusdc`-funktion `upload_attachment` changed. Instead using `base64` and `unix2dos` binaries, we use Base64-Ruby-Class now. It is already required by usd.
