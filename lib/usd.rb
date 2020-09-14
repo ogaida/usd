@@ -251,7 +251,7 @@ class Usd
     # if wc contains no sql-compare operater, it will be changed to "COMMON_NAME like '%<wc-before>%'"
     wc = attr.pop
     wc.gsub!(/^WC=/,'')
-    if ([" like ","<",">","="," is "," in "].find {|e| wc =~ /#{e}/}).nil?
+    if ([" like ","<",">","="," is "," in "," LIKE ", " IS ", " IN "].find {|e| wc =~ /#{e}/}).nil?
       wc = "#{CN[object]} like '%#{wc}%'"
     end
     attr.push "WC=#{wc}"

@@ -230,16 +230,12 @@ class Rusdc < Thor
     end
   end
 
-  # in: lrel_attachments_requests ?
-
   desc "get_attachment_of_co <co_name> <filename>", "download an attachment of a changeorder and print it out on stdout"
   def get_attachment_of_co(coname, filename)
     ids = loadcon.search("lrel_attachments_changes",{'fields' => "*","wc" => "chg.chg_ref_num = 'CO341144' and attmnt.orig_file_name = 'IMAP61A845F524A9D06536_3212.eml'"})
     puts loadcon.request("/caisd-rest/attmnt/#{ids[0]["@id"]}/file-resource",{:unchanged => true}) if ids.class == Array
   end
 
-
-  #lrel_attachments_requests",{'fields' => "attmnt","wc" => "cr.ref_num
   desc "in_add_attachment <in> <file>", "attach the file to incident"
   def in_add_attachment(incident, file)
     response = loadcon.upload_attachment(file)
@@ -261,7 +257,6 @@ class Rusdc < Thor
         :id => data["attmnt"]["@id"],
         :incident => incident
       })
-    #puts "create relation to chg with json: #{json}"
     puts loadcon.create({:type => "json", :data => json})
   end
 

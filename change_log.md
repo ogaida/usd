@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.3.4.1
+
+- fixed another error in Usd.search. which comes with 1.3.1 .
+
 ## 1.3.4
 
 - move function `upload_attachment` from `bin/rusdc` to `lib/usd`.
