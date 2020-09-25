@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.3.5
+
+- new function `nr_add_contact <nr> <email>` to assign a contact to a configuration-item
+
 ## 1.3.4.1
 
 - fixed another error in Usd.search. which comes with 1.3.1 .

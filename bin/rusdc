@@ -236,7 +236,7 @@ class Rusdc < Thor
     puts loadcon.request("/caisd-rest/attmnt/#{ids[0]["@id"]}/file-resource",{:unchanged => true}) if ids.class == Array
   end
 
-  desc "in_add_attachment <in> <file>", "attach the file to incident"
+  desc "in_add_attachment <in> <file>", "attach a file to an incident or problem"
   def in_add_attachment(incident, file)
     response = loadcon.upload_attachment(file)
     puts response
@@ -287,7 +287,7 @@ class Rusdc < Thor
     end
   end
 
-  desc "list_attachments_of_in <in>", "list all attachments of an Incident"
+  desc "list_attachments_of_in <in>", "list all attachments of an incident or problem"
   def list_attachments_of_in(incident)
     att_in = loadcon.search("lrel_attachments_requests",{'fields' => "attmnt","wc" => "cr.ref_num = '#{incident}'"})
     att_in.each do |att|
@@ -336,6 +336,28 @@ class Rusdc < Thor
       }
     EOF
     json = template.result_with_hash(:uid_child => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{child}")["nr"]["@id"], :uid_parent => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{nr}")["nr"]["@id"])
+    puts loadcon.create({:type => "json", :data => json})
+  end
+
+  desc "nr_add_contact <nr> <cnt_email>", "add contact to configuration-item"
+  def nr_add_contact(nr, cnt_email)
+    template = ERB.new <<-EOF
+      {
+        "lrel_cenv_cntref": {
+          "nr": {
+            "@id": "<%= uid_nr %>"
+          },
+          "cnt": {
+            "@id": "<%= uid_cnt %>"
+          }
+        }
+      }
+    EOF
+    json = template.result_with_hash({
+        :uid_nr => loadcon.request("/caisd-rest/nr/COMMON_NAME-#{nr}")["nr"]["@id"],
+        :uid_cnt => loadcon.search("cnt",{'fields' => "@id","wc" => "email_address = '#{cnt_email}'"})[0]["@id"]
+      })
+    #puts "create relation to chg with json: #{json}"
     puts loadcon.create({:type => "json", :data => json})
   end
 
