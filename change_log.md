@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.3.6
+
+- Bugfix : uploaded filename with special character will be renamed with `URI.escape`
+
 ## 1.3.5
 
 - new function `nr_add_contact <nr> <email>` to assign a contact to a configuration-item

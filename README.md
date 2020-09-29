@@ -56,13 +56,14 @@ rusdc get_attachment_of_co <co_name> <filename>                              # d
 rusdc get_attachment_of_in <incident> <filename>                             # download an attachment of an Incident and print it out on stdout
 rusdc help [COMMAND]                                                         # Describe available commands or one specific command
 rusdc in_add_2_chg <changeorder> <incident>                                  # add incident to changeorder
-rusdc in_add_attachment <in> <file>                                          # attach the file to incident
+rusdc in_add_attachment <in> <file>                                          # attach a file to an incident or problem
 rusdc in_list_child_ins <in>                                                 # list all child-incidents of one incident
 rusdc list_attachments_of_ci <ci_name>                                       # list all attachments of a CI
 rusdc list_attachments_of_co <co_name>                                       # list all attachments of a changeorder
-rusdc list_attachments_of_in <in>                                            # list all attachments of an Incident
+rusdc list_attachments_of_in <in>                                            # list all attachments of an incident or problem
 rusdc nr_add_attachment <nr> <file>                                          # attach the file to nr
 rusdc nr_add_child <nr-name> <child-name>                                    # add one child CI to another CI
+rusdc nr_add_contact <nr> <cnt_email>                                        # add contact to configuration-item
 rusdc nr_add_org <nr> <org>                                                  # add an Organisation to a ConfigurationItem
 rusdc nr_changes <nr> [inactive-too]                                         # list all open changeorders of one CI
 rusdc nr_childs <ci-name>                                                    # lists all childs CIs of a specific CI

@@ -283,7 +283,8 @@ class Usd
     baseurl =~ /^([^:]+):/
     server = $1
     filename = File.basename(file)
-    uri = "/caisd-rest/attmnt?repositoryId=1002&serverName=#{server}&mimeType=Text&description=#{filename}"
+    filename_escaped = URI.escape(filename)
+    uri = "/caisd-rest/attmnt?repositoryId=1002&serverName=#{server}&mimeType=Text&description=#{filename_escaped}"
     url = URI("#{baseurl}#{uri}")
     http = Net::HTTP.new(url.host, url.port);
     request = Net::HTTP::Post.new(url)
@@ -294,7 +295,7 @@ class Usd
     fileObj = File.open(file, "rb")
     fileContent = fileObj.read
     fileObj.close
-    request.body = "--*****MessageBoundary*****\r\n \r\nContent-Disposition: form-data; name=\"payload\" \r\nContent-Type: application/xml; CHARACTERSET=UTF-8 \r\n\r\n \r\n<attmnt> \r\n<repository id=\"1002\"></repository> \r\n<orig_file_name>#{filename}</orig_file_name> \r\n<attmnt_name>#{filename}</attmnt_name> \r\n<description>Uploaded with rusdc from rubygem usd</description> \r\n</attmnt> \r\n\r\n \r\n--*****MessageBoundary*****\r\n \r\nContent-Disposition: form-data; name=\"#{filename}\"; filename=\"#{filename}\" \r\nContent-Type: application/octet-stream \r\nContent-Transfer-Encoding: base64\r\n\r\n#{Base64.encode64(fileContent)}\r\n\r\n \r\n--*****MessageBoundary*****--\r\n"
+    request.body = "--*****MessageBoundary*****\r\n \r\nContent-Disposition: form-data; name=\"payload\" \r\nContent-Type: application/xml; CHARACTERSET=UTF-8 \r\n\r\n \r\n<attmnt> \r\n<repository id=\"1002\"></repository> \r\n<orig_file_name>#{filename_escaped}</orig_file_name> \r\n<attmnt_name>#{filename_escaped}</attmnt_name> \r\n<description>Uploaded with rusdc from rubygem usd</description> \r\n</attmnt> \r\n\r\n \r\n--*****MessageBoundary*****\r\n \r\nContent-Disposition: form-data; name=\"#{filename_escaped}\"; filename=\"#{filename_escaped}\" \r\nContent-Type: application/octet-stream \r\nContent-Transfer-Encoding: base64\r\n\r\n#{Base64.encode64(fileContent)}\r\n\r\n \r\n--*****MessageBoundary*****--\r\n"
     response = http.request(request)
     response.read_body
   end
