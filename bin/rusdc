@@ -232,8 +232,14 @@ class Rusdc < Thor
 
   desc "get_attachment_of_co <co_name> <filename>", "download an attachment of a changeorder and print it out on stdout"
   def get_attachment_of_co(coname, filename)
-    ids = loadcon.search("lrel_attachments_changes",{'fields' => "*","wc" => "chg.chg_ref_num = 'CO341144' and attmnt.orig_file_name = 'IMAP61A845F524A9D06536_3212.eml'"})
-    puts loadcon.request("/caisd-rest/attmnt/#{ids[0]["@id"]}/file-resource",{:unchanged => true}) if ids.class == Array
+    chg_id=loadcon.request("/caisd-rest/chg/COMMON_NAME-#{coname}")["chg"]["@id"]
+    att_nr = loadcon.search("lrel_attachments_changes",{'fields' => "attmnt","wc" => "chg = #{chg_id}"})
+    att_nr.each do |att|
+      attmnt = loadcon.request("/caisd-rest/attmnt/#{att["attmnt"]["@id"]}")["attmnt"]
+      if attmnt["orig_file_name"] == filename
+        puts loadcon.request("/caisd-rest/attmnt/#{attmnt["@id"]}/file-resource",{:unchanged => true})
+      end
+    end
   end
 
   desc "in_add_attachment <in> <file>", "attach a file to an incident or problem"

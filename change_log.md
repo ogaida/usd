@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.3.7
+
+- Bugfix in rusdc-function `get_attachment_of_co`
+
 ## 1.3.6
 
 - Bugfix : uploaded filename with special character will be renamed with `URI.escape`
