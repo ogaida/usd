@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.4.0
+
+- remove "warning: URI.escape is obsolete" 
+
 ## 1.3.7
 
 - Bugfix in rusdc-function `get_attachment_of_co`

@@ -11,6 +11,7 @@ require 'tempfile'
 class Usd
 
   CN={
+    "grc" => "type",
     "chg" => "chg_ref_num",
     "cnt" => "combo_name",
     "arcpur_rule" => "name",
@@ -160,10 +161,11 @@ class Usd
     RestClient.log = STDOUT if @debug
     hash = {:method => "get", :header => header(), :unchanged => false, :json => "", :base_url => @base_url}.update hash
     puts "request - hash: #{JSON.pretty_generate(hash)}" if @debug
+    parser = URI::RFC2396_Parser.new
     if (uri !~ /^http/)
-      url = URI.escape("#{hash[:base_url]}#{uri}")
+      url = parser.escape("#{hash[:base_url]}#{uri}")
     else
-      url = URI.escape(uri)
+      url = parser.escape(uri)
     end
     begin
       if hash[:method] == "get"
@@ -283,7 +285,8 @@ class Usd
     baseurl =~ /^([^:]+):/
     server = $1
     filename = File.basename(file)
-    filename_escaped = URI.escape(filename)
+    #filename_escaped = URI.escape(filename)
+    filename_escaped = filename.gsub(/[^0-9A-Za-z.\-]/, '_')
     uri = "/caisd-rest/attmnt?repositoryId=1002&serverName=#{server}&mimeType=Text&description=#{filename_escaped}"
     url = URI("#{baseurl}#{uri}")
     http = Net::HTTP.new(url.host, url.port);
