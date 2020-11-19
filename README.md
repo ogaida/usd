@@ -117,3 +117,7 @@ more examples under [find examples-Wikipage](https://github.com/ogaida/usd/wiki/
 # senarios
 
 <img src="https://yuml.me/diagram/scruffy/class/[SDM%20REST-API{bg:red}]<->[usd-gem{bg:green}]<->[rusdc{bg:orange}],[ruby-script{bg:orange}]<->[usd-gem],[sinatra%20web-app{bg:orange}]<->[usd-gem],[bash commands]<->[rusdc],[shell-scripts]<->[rusdc],[import]->[ruby-script],[ruby-script]->[export],[reports]<-[sinatra%20web-app]<-[drop datafiles/emails/create objects]">
+
+# feedback
+
+Since I could only test this gem in a 14.1 environment, I would be interested to know whether it also works in a version 17 environment of CA Service Management. Any kind of feedback is very welcome.
