@@ -520,7 +520,7 @@ class Rusdc < Thor
       })
     data = loadcon.update({:type => "json", :data => json})
     if data.class == RestClient::BadRequest
-      puts "BadRequest-Response from USD-API, try to update via IDs. be aware to specify a ref_obj if it's not nr."
+      puts "Hint: Do not panic, I got a bad Request-Response from USD-API. Now I try again to update via IDs of COMMON_NAME arguments. Be aware to specify a ref_obj if it's not nr."
       cn_id = loadcon.search(obj,{'fields' => "@id","wc" => "#{Usd::CN[obj]} = '#{cn}' and delete_flag = 0"})[0]["@id"]
       value_id = loadcon.search(ref_obj,{'fields' => "@id","wc" => "#{Usd::CN[ref_obj]} = '#{v}' and delete_flag = 0"})[0]["@id"]
       invoke "update_ref_attr_by_id", [obj, cn_id, k, value_id]
