@@ -1,8 +1,12 @@
 # rusdc changelog
 
+## 1.4.1
+
+- changed some comments
+
 ## 1.4.0
 
-- remove "warning: URI.escape is obsolete" 
+- remove "warning: URI.escape is obsolete"
 
 ## 1.3.7
 
