@@ -273,7 +273,7 @@ class Usd
     else
       retArray = res_rdata["collection_#{object}"][object]
       if total_count > (count + start - 1)
-        new_params = {"start" => (start + 50)}
+        new_params = {"start" => (start + count)}
         params = params.update new_params
         retArray += search(object,params)
       end

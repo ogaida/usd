@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.4.2
+
+- count number changed for search method from fixed value of 50 to dynamic value
+
 ## 1.4.1
 
 - changed some comments
