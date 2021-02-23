@@ -92,7 +92,7 @@ class Usd
     @base_url = base_url
     @user = user
     @debug = false
-    remfile = "#{ENV["HOME"]}/.usd"
+    remfile = "#{ENV["HOME"]}/.usd_#{user}"
     if File.exist?(remfile) and hash[:save_access_key]
       tt = YAML.load(File.open(remfile,"r"))
       if (tt.expiration_date - Time.now.to_i ) > 900 and tt.base_url == base_url

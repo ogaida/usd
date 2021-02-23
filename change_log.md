@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.5.0
+
+- sdm-access token caching changed, now for multiple user-sessions in one environment
+
 ## 1.4.2
 
 - count number changed for search method from fixed value of 50 to dynamic value

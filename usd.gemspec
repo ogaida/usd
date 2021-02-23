@@ -1,7 +1,7 @@
 Gem::Specification.new do |spec|
   spec.name = 'usd'
-  spec.version = '0.2.4.2'
-  spec.date = '2020-01-28'
+  spec.version = '1.5.0'
+  spec.date = '2020-12-18'
   spec.summary = "SDM REST-API-Calls"
   spec.description = "a Ruby class and a commandlinetool for SDM REST-API-Calls"
   spec.authors = ["Oliver Gaida"]
@@ -13,4 +13,5 @@ Gem::Specification.new do |spec|
   spec.add_runtime_dependency 'thor', '~> 0.20', '>= 0.20.3'
   spec.add_runtime_dependency 'rest-client', '~> 2.0', '>= 2.0.0'
   spec.add_runtime_dependency 'json', '~> 2.1', '>= 2.1.0'
+  spec.license = 'MIT'
 end
