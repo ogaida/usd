@@ -1,5 +1,9 @@
 # rusdc changelog
 
+## 1.5.2
+
+- disabled output, when login was successful. before this, it led to errors when the output was parsed
+
 ## 1.5.0
 
 - sdm-access token caching changed, now for multiple user-sessions in one environment

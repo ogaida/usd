@@ -121,7 +121,7 @@ class Usd
             "authorization" =>  "Basic #{encoded}",
             "cache-control" => "no-cache"
           },
-          log: Logger.new(STDOUT)
+          log: Logger.new("/dev/null")
         )
         authData=JSON.parse(response.body)
         if authData['rest_access']['access_key'] > 0
